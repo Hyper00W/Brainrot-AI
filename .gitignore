@@ -1,0 +1,15 @@
+.env
+venv/
+__pycache__/
+*.pyc
+*.pyo
+generated/
+brainrot.db
+youtube_token.json
+client_secrets.json
+*.mp4
+*.mp3
+*.wav
+*.exe
+ffmpeg/
+temp_ffmpeg/

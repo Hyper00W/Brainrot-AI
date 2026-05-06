@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BRAINROT.AI — Shorts Automation Studio</title>
+  <meta name="description" content="AI-powered YouTube Shorts automation — generate, render, and upload viral brainrot content automatically." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/css/main.css" />
+</head>
+<body>
+
+  <!-- Animated BG Grid -->
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <span class="logo-icon">⚡</span>
+      <span class="logo-text">BRAINROT<span class="logo-accent">.AI</span></span>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-section="generate">
+        <span class="nav-icon">🎬</span>
+        <span>Generate Video</span>
+        <span class="nav-glow"></span>
+      </a>
+      <a href="#" class="nav-item" data-section="queue">
+        <span class="nav-icon">⏳</span>
+        <span>Upload Queue</span>
+        <span class="nav-badge" id="queue-count">0</span>
+      </a>
+      <a href="#" class="nav-item" data-section="analytics">
+        <span class="nav-icon">📊</span>
+        <span>Analytics</span>
+      </a>
+      <a href="#" class="nav-item" data-section="videos">
+        <span class="nav-icon">🎞️</span>
+        <span>Recent Videos</span>
+      </a>
+      <a href="#" class="nav-item" data-section="logs">
+        <span class="nav-icon">🖥️</span>
+        <span>Render Logs</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="status-pill online">
+        <span class="pulse-dot"></span>
+        <span>System Online</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-content">
+
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="page-title">Generate Video</h1>
+        <span class="page-subtitle">AI-powered Shorts factory</span>
+      </div>
+      <div class="topbar-right">
+        <div class="stat-chip">
+          <span class="chip-label">Videos Today</span>
+          <span class="chip-val" id="today-count">—</span>
+        </div>
+        <div class="stat-chip">
+          <span class="chip-label">Queue</span>
+          <span class="chip-val" id="queue-size">—</span>
+        </div>
+        <div class="stat-chip success">
+          <span class="chip-label">Gemini</span>
+          <span class="chip-val">Active</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ==================== GENERATE SECTION ==================== -->
+    <section class="section active" id="section-generate">
+      <div class="section-grid two-col">
+
+        <!-- Script Generator Panel -->
+        <div class="glass-card">
+          <div class="card-header">
+            <span class="card-title">Script Generator</span>
+            <span class="badge-neon">GEMINI</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Topic / Niche</label>
+            <input type="text" id="topic-input" class="form-input" placeholder="e.g. Did you know sharks can't stop moving..." />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Voice</label>
+            <div class="voice-grid">
+              <label class="voice-opt active" data-voice="guy">
+                <input type="radio" name="voice" value="guy" checked hidden />
+                <span class="voice-icon">🎙️</span>
+                <span>Guy</span>
+              </label>
+              <label class="voice-opt" data-voice="davis">
+                <input type="radio" name="voice" value="davis" hidden />
+                <span class="voice-icon">🎤</span>
+                <span>Davis</span>
+              </label>
+              <label class="voice-opt" data-voice="tony">
+                <input type="radio" name="voice" value="tony" hidden />
+                <span class="voice-icon">🔊</span>
+                <span>Tony</span>
+              </label>
+              <label class="voice-opt" data-voice="aria">
+                <input type="radio" name="voice" value="aria" hidden />
+                <span class="voice-icon">✨</span>
+                <span>Aria</span>
+              </label>
+            </div>
+          </div>
+
+          <button class="btn-neon" id="generate-btn" onclick="generateScript()">
+            <span class="btn-icon">⚡</span>
+            <span class="btn-txt">Generate Script</span>
+            <span class="btn-shimmer"></span>
+          </button>
+
+          <!-- Script Output -->
+          <div class="script-output hidden" id="script-output">
+            <div class="output-row">
+              <span class="output-label">HOOK</span>
+              <p class="output-hook" id="out-hook"></p>
+            </div>
+            <div class="output-row">
+              <span class="output-label">TITLE</span>
+              <p class="output-title-text" id="out-title"></p>
+            </div>
+            <div class="output-row">
+              <span class="output-label">SCRIPT</span>
+              <textarea class="output-script" id="out-script" rows="6"></textarea>
+            </div>
+            <div class="output-row">
+              <span class="output-label">HASHTAGS</span>
+              <div class="hashtag-row" id="out-hashtags"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Voice & Pipeline Panel -->
+        <div class="glass-card">
+          <div class="card-header">
+            <span class="card-title">Pipeline Controls</span>
+            <span class="badge-neon cyan">EDGE TTS</span>
+          </div>
+
+          <div class="pipeline-steps">
+            <div class="step" id="step-script">
+              <div class="step-num">01</div>
+              <div class="step-info">
+                <span class="step-name">Script</span>
+                <span class="step-status" id="ss-script">Waiting</span>
+              </div>
+              <div class="step-indicator pending" id="si-script"></div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-voice">
+              <div class="step-num">02</div>
+              <div class="step-info">
+                <span class="step-name">Voice</span>
+                <span class="step-status" id="ss-voice">Waiting</span>
+              </div>
+              <div class="step-indicator pending" id="si-voice"></div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-gameplay">
+              <div class="step-num">03</div>
+              <div class="step-info">
+                <span class="step-name">Gameplay</span>
+                <span class="step-status" id="ss-gameplay">Waiting</span>
+              </div>
+              <div class="step-indicator pending" id="si-gameplay"></div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-captions">
+              <div class="step-num">04</div>
+              <div class="step-info">
+                <span class="step-name">Captions</span>
+                <span class="step-status" id="ss-captions">Waiting</span>
+              </div>
+              <div class="step-indicator pending" id="si-captions"></div>
+            </div>
+            <div class="step-connector"></div>
+            <div class="step" id="step-render">
+              <div class="step-num">05</div>
+              <div class="step-info">
+                <span class="step-name">Render</span>
+                <span class="step-status" id="ss-render">Waiting</span>
+              </div>
+              <div class="step-indicator pending" id="si-render"></div>
+            </div>
+          </div>
+
+          <button class="btn-neon purple hidden" id="voice-btn" onclick="generateVoice()">
+            <span class="btn-icon">🎙️</span>
+            <span class="btn-txt">Generate Voice</span>
+            <span class="btn-shimmer"></span>
+          </button>
+
+          <button class="btn-neon hidden" id="render-btn" onclick="startRender()" style="margin-top:0.5rem">
+            <span class="btn-icon">🎬</span>
+            <span class="btn-txt">Render Video</span>
+            <span class="btn-shimmer"></span>
+          </button>
+
+          <!-- Terminal log -->
+          <div class="terminal" id="pipeline-log">
+            <div class="terminal-header">
+              <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+              <span class="terminal-title">pipeline.log</span>
+            </div>
+            <div class="terminal-body" id="log-body">
+              <span class="log-line muted">$ Waiting for input...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== QUEUE SECTION ==================== -->
+    <section class="section" id="section-queue">
+      <div class="glass-card full-width">
+        <div class="card-header">
+          <span class="card-title">Upload Queue</span>
+          <button class="btn-sm" onclick="loadQueue()">↺ Refresh</button>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table" id="queue-table">
+            <thead>
+              <tr><th>#</th><th>Video ID</th><th>Status</th><th>Added</th><th>Action</th></tr>
+            </thead>
+            <tbody id="queue-body">
+              <tr><td colspan="5" class="empty-row">No items in queue</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== ANALYTICS SECTION ==================== -->
+    <section class="section" id="section-analytics">
+      <div class="section-grid three-col">
+        <div class="glass-card stat-card">
+          <div class="stat-icon">🎬</div>
+          <div class="stat-num" id="total-videos">—</div>
+          <div class="stat-label">Total Videos</div>
+          <div class="stat-bar"><div class="stat-fill" style="width:70%"></div></div>
+        </div>
+        <div class="glass-card stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-num" id="uploaded-count">—</div>
+          <div class="stat-label">Uploaded</div>
+          <div class="stat-bar"><div class="stat-fill cyan" style="width:45%"></div></div>
+        </div>
+        <div class="glass-card stat-card">
+          <div class="stat-icon">⏳</div>
+          <div class="stat-num" id="pending-count">—</div>
+          <div class="stat-label">Pending</div>
+          <div class="stat-bar"><div class="stat-fill purple" style="width:25%"></div></div>
+        </div>
+      </div>
+
+      <div class="glass-card full-width" style="margin-top:1.5rem">
+        <div class="card-header">
+          <span class="card-title">Activity Timeline</span>
+        </div>
+        <div class="activity-timeline" id="timeline">
+          <span class="muted">No activity data yet.</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== VIDEOS SECTION ==================== -->
+    <section class="section" id="section-videos">
+      <div class="card-header standalone">
+        <span class="card-title">Recent Videos</span>
+        <button class="btn-sm" onclick="loadVideos()">↺ Refresh</button>
+      </div>
+      <div class="videos-grid" id="videos-grid">
+        <span class="muted">Loading...</span>
+      </div>
+    </section>
+
+    <!-- ==================== LOGS SECTION ==================== -->
+    <section class="section" id="section-logs">
+      <div class="glass-card full-width">
+        <div class="card-header">
+          <span class="card-title">Render Logs</span>
+          <button class="btn-sm" onclick="loadLogs()">↺ Refresh</button>
+        </div>
+        <div class="logs-list" id="logs-list">
+          <span class="muted">No render logs yet.</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>
