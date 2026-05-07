@@ -51,7 +51,17 @@ def sync_videos():
         if not existing:
             v = Video(title=f"Discovered {f}", status='pending', filename=f)
             db.session.add(v)
+            db.session.flush()
+            # Auto-add to upload queue
+            q = QueueItem(video_id=v.id, status='queued')
+            db.session.add(q)
             results.append(f)
+        else:
+            # If exists but not in queue, add it
+            if existing.status == 'pending' and not QueueItem.query.filter_by(video_id=existing.id).first():
+                q = QueueItem(video_id=existing.id, status='queued')
+                db.session.add(q)
+                results.append(f"Queued existing: {f}")
     
     db.session.commit()
     return jsonify({'synced': results})
@@ -89,7 +99,18 @@ def get_videos():
 @app.route('/api/queue', methods=['GET'])
 def get_queue():
     items = QueueItem.query.filter_by(status='queued').all()
-    return jsonify([{'id': i.id, 'video_id': i.video_id, 'status': i.status} for i in items])
+    res = []
+    for i in items:
+        v = db.session.get(Video, i.video_id)
+        res.append({
+            'id': i.id,
+            'video_id': i.video_id,
+            'status': i.status,
+            'added_at': i.added_at.isoformat(),
+            'title': v.title if v else '',
+            'script': v.script if v else ''
+        })
+    return jsonify(res)
 
 @app.route('/api/logs', methods=['GET'])
 def get_logs():
@@ -154,6 +175,10 @@ def render_video():
 
                 log(f'> Done! {result["size_mb"]}MB -> {result["path"]}')
                 v.status = 'pending'
+                # Auto-add to upload queue
+                if not QueueItem.query.filter_by(video_id=v.id).first():
+                    q = QueueItem(video_id=v.id, status='queued')
+                    db.session.add(q)
                 v.render_log = '\n'.join(log_lines)
             except Exception as e:
                 log(f'ERROR: {e}')
@@ -172,16 +197,18 @@ def upload_video(video_id):
     if not v: return jsonify({'success': False, 'error': 'Video not found'})
 
     data    = request.json or {}
+    title   = data.get('title') or v.title
+    desc    = data.get('description') or v.script or ''
     hashtags = data.get('hashtags', [])
     
     path = os.path.join('generated/video', v.filename)
     if not os.path.exists(path):
         return jsonify({'success': False, 'error': f'File not found: {v.filename}'})
-
+    
     result = yt_upload(
         video_path  = path,
-        title       = v.title,
-        description = v.script or '',
+        title       = title,
+        description = desc,
         hashtags    = hashtags
     )
     if result['success']:
@@ -189,6 +216,24 @@ def upload_video(video_id):
         v.status = 'uploaded'
         db.session.commit()
     return jsonify(result)
+
+@app.route('/api/queue/delete/<int:queue_id>', methods=['DELETE'])
+def delete_from_queue(queue_id):
+    q = db.session.get(QueueItem, queue_id)
+    if not q: return jsonify({'success': False, 'error': 'Queue item not found'})
+    
+    v = db.session.get(Video, q.video_id)
+    if v:
+        # Delete file if exists
+        path = os.path.join('generated/video', v.filename)
+        if os.path.exists(path):
+            try: os.remove(path)
+            except: pass
+        db.session.delete(v)
+    
+    db.session.delete(q)
+    db.session.commit()
+    return jsonify({'success': True})
 
 if __name__ == '__main__':
     with app.app_context():

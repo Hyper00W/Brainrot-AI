@@ -230,12 +230,22 @@ async function loadQueue() {
       return;
     }
     tbody.innerHTML = items.map((item, i) => `
-      <tr>
+      <tr id="queue-item-${item.id}">
         <td>${i + 1}</td>
-        <td>${item.video_id || '—'}</td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <input type="text" class="form-input q-title" value="${item.title || ''}" placeholder="Video Title" />
+            <textarea class="form-input q-desc" rows="2" placeholder="Description">${item.script || ''}</textarea>
+          </div>
+        </td>
         <td><span class="status-badge ${item.status}">${item.status}</span></td>
-        <td>${item.added_at || '—'}</td>
-        <td><button class="btn-sm" onclick="uploadVideo(${item.id})">Upload</button></td>
+        <td>${timeAgo(item.added_at)}</td>
+        <td>
+          <div style="display:flex;flex-direction:column;gap:5px">
+            <button class="btn-neon" style="padding:0.5rem" onclick="uploadVideo(${item.video_id}, ${item.id})">Upload</button>
+            <button class="btn-sm" style="border-color:var(--mag);color:var(--mag)" onclick="removeFromQueue(${item.id})">Remove</button>
+          </div>
+        </td>
       </tr>
     `).join('');
   } catch (e) {
@@ -317,6 +327,60 @@ async function loadLogs() {
       </div>
     `).join('');
   } catch (e) { console.error(e); }
+}
+
+// ---- Actions ----
+async function uploadVideo(videoId, queueId) {
+  const row = document.getElementById(`queue-item-${queueId}`);
+  const customTitle = row.querySelector('.q-title').value.trim();
+  const customDesc  = row.querySelector('.q-desc').value.trim();
+  
+  const btn = event.target;
+  const originalTxt = btn.textContent;
+  btn.textContent = 'Uploading...';
+  btn.disabled = true;
+  toast('Starting YouTube upload...', 'info');
+
+  try {
+    const res = await fetch(`/api/upload/${videoId}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ 
+        title: customTitle,
+        description: customDesc,
+        hashtags: ['shorts', 'brainrot', 'viral'] 
+      })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Upload failed');
+    
+    toast('Video uploaded successfully!', 'success');
+    loadQueue();
+    loadAnalytics();
+    loadVideos();
+  } catch (err) {
+    toast(err.message, 'error');
+  } finally {
+    btn.textContent = originalTxt;
+    btn.disabled = false;
+  }
+}
+
+async function removeFromQueue(queueId) {
+  if (!confirm('Are you sure you want to remove and delete this video?')) return;
+  
+  try {
+    const res = await fetch(`/api/queue/delete/${queueId}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || 'Delete failed');
+    
+    toast('Video removed and deleted.', 'success');
+    loadQueue();
+    loadAnalytics();
+    loadVideos();
+  } catch (err) {
+    toast(err.message, 'error');
+  }
 }
 
 // ---- Helpers ----

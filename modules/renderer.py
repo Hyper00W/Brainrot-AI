@@ -10,7 +10,7 @@ WORDS_PER_FRAME = 3
 FFMPEG = os.path.abspath('ffmpeg.exe') if os.path.exists('ffmpeg.exe') else 'ffmpeg'
 
 def create_ass_file(words: list, output_path: str):
-    """Create an Advanced Substation Alpha subtitle file."""
+    """Create an Advanced Substation Alpha subtitle file with word-level highlighting."""
     header = [
         "[Script Info]",
         "ScriptType: v4.00+",
@@ -19,33 +19,40 @@ def create_ass_file(words: list, output_path: str):
         "",
         "[V4+ Styles]",
         "Format: Name, Fontname, Fontsize, PrimaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding",
-        "Style: Default,Arial,72,&H0000FFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,6,0,2,10,10,500,1",
+        "Style: Default,Grobold,100,&H00FFFFFF,&H00000000,&H00000000,-1,0,0,0,100,100,0,0,1,8,0,2,10,10,960,1",
         "",
         "[Events]",
         "Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text"
     ]
     
     events = []
-    chunk = []
-    t_start_str = "0:00:00.00"
-
+    
     def format_time(seconds):
         h = int(seconds // 3600)
         m = int((seconds % 3600) // 60)
         s = seconds % 60
         return f"{h}:{m:02d}:{s:05.2f}"
 
-    for i, w in enumerate(words):
-        if not chunk:
-            t_start_str = format_time(w['start'])
+    # Group words into chunks of 2-3 words
+    chunk_size = 2
+    for i in range(0, len(words), chunk_size):
+        chunk = words[i:i + chunk_size]
+        if not chunk: continue
         
-        chunk.append(w['word'])
-        
-        if len(chunk) >= WORDS_PER_FRAME or i == len(words) - 1:
-            t_end_str = format_time(w['end'])
-            text = " ".join(chunk)
-            events.append(f"Dialogue: 0,{t_start_str},{t_end_str},Default,,0,0,0,,{text}")
-            chunk = []
+        # For each word in the chunk, create a timed event where ONLY that word is yellow
+        for highlight_idx in range(len(chunk)):
+            t_start = format_time(chunk[highlight_idx]['start'])
+            t_end = format_time(chunk[highlight_idx]['end'] if highlight_idx == len(chunk)-1 else chunk[highlight_idx+1]['start'])
+            
+            text_parts = []
+            for j, w in enumerate(chunk):
+                if j == highlight_idx:
+                    text_parts.append(f"{{\\c&H00FFFF&}}{w['word']}{{\\c&HFFFFFF&}}")
+                else:
+                    text_parts.append(w['word'])
+            
+            line = " ".join(text_parts).upper()
+            events.append(f"Dialogue: 0,{t_start},{t_end},Default,,0,0,0,,{line}")
 
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("\n".join(header + events))
