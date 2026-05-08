@@ -25,6 +25,15 @@ class Video(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     render_log = db.Column(db.Text)
 
+class ScriptCache(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    topic = db.Column(db.String(200), unique=True, index=True)
+    title = db.Column(db.String(200))
+    hook = db.Column(db.String(200))
+    script = db.Column(db.Text)
+    hashtags = db.Column(db.Text) # Stored as JSON string
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class QueueItem(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     video_id = db.Column(db.Integer, db.ForeignKey('video.id'))
@@ -67,11 +76,43 @@ def sync_videos():
     return jsonify({'synced': results})
 
 @app.route('/api/generate-script', methods=['POST'])
-def generate_script():
-    from modules.script_generator import generate_script
+def generate_script_route():
+    import json
+    from modules.script_generator import generate_script as call_gemini
     data = request.json
-    topic = data.get('topic', '')
-    result = generate_script(topic)
+    topic = data.get('topic', '').strip().lower()
+    
+    # 1. Check Cache
+    cached = ScriptCache.query.filter_by(topic=topic).first()
+    if cached:
+        return jsonify({
+            'success': True,
+            'title': cached.title,
+            'hook': cached.hook,
+            'script': cached.script,
+            'hashtags': json.loads(cached.hashtags),
+            'cached': True
+        })
+
+    # 2. Call API if not cached
+    result = call_gemini(topic)
+    
+    if result.get('success'):
+        # Save to Cache
+        try:
+            new_cache = ScriptCache(
+                topic=topic,
+                title=result['title'],
+                hook=result['hook'],
+                script=result['script'],
+                hashtags=json.dumps(result['hashtags'])
+            )
+            db.session.add(new_cache)
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            print(f"Cache Error: {e}")
+            
     return jsonify(result)
 
 @app.route('/api/generate-voice', methods=['POST'])

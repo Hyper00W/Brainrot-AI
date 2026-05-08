@@ -17,24 +17,21 @@ def _get_model():
 
 model = _get_model()
 
-SCRIPT_PROMPT = """You are a viral YouTube Shorts script writer specializing in brainrot content.
-Generate a highly engaging short-form video script for the topic: "{topic}"
+SCRIPT_PROMPT = """You are a viral YouTube Shorts script writer specializing in modern brainrot/gen-alpha content.
+Generate a high-retention video script for the topic: "{topic}"
 
 Return ONLY valid JSON in this exact format:
 {{
-  "hook": "attention-grabbing opening line (max 15 words)",
-  "script": "full spoken script (60-90 seconds when read aloud, punchy sentences)",
-  "title": "YouTube video title (max 60 chars, clickbait but accurate)",
-  "hashtags": ["#tag1", "#tag2", "#tag3", "#tag4", "#tag5"],
-  "duration_estimate": "estimated seconds when spoken"
+  "hook": "shoking attention-grabbing opening line",
+  "script": "spoken script with fast-paced, punchy sentences (aim for ~180 words)",
+  "title": "Viral YouTube title",
+  "hashtags": ["#shorts", "#brainrot", "#fyp", "#viral", "#interesting"]
 }}
 
 Rules:
-- Hook must be shocking or controversial
-- Use Gen-Z/internet slang naturally
-- Script must be fast-paced with short punchy sentences
-- Optimize for viewer retention in first 3 seconds
-- No markdown, only raw JSON
+- Hook MUST use a 'pattern interrupt' strategy to stop the scroll.
+- Use intense, fast-paced language.
+- NO metadata, NO formatting help, just raw JSON.
 """
 
 def generate_script(topic: str) -> dict:

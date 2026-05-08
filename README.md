@@ -1,83 +1,113 @@
-# BRAINROT.AI — YouTube Shorts Automation
-# =========================================
-# Quick-start guide
+# 🧠 BRAINROT.AI
+### *The Ultimate AI-Powered YouTube Shorts Automation Studio*
 
-## Setup
+[![Python Version](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Flask](https://img.shields.io/badge/flask-3.0+-green.svg)](https://flask.palletsprojects.com/)
+[![Gemini API](https://img.shields.io/badge/AI-Gemini-orange.svg)](https://ai.google.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+**Brainrot.ai** is a production-grade automation pipeline designed to generate viral-ready YouTube Shorts from a single topic. It orchestrates script generation, high-fidelity voice synthesis, dynamic gameplay selection, and word-level highlighted captions into a seamless, high-speed rendering process.
+
+---
+
+## 📺 Dashboard Preview
+
+![Dashboard Preview](assets/screenshots/dashboard.png)
+
+---
+
+## ✨ Key Features
+
+- ⚡ **Seamless Pipeline**: Topic ➔ Script ➔ Voice ➔ Gameplay ➔ Subtitles ➔ Render.
+- 🤖 **Gemini-Powered Scripts**: Intelligent scripting tailored for viral hooks and engagement.
+- 🎙️ **Edge-TTS Integration**: High-quality, natural-sounding voiceovers (Multiple personas: Guy, Davis, Tony, Aria).
+- 🎮 **Dynamic Gameplay Selection**: Automatically picks and vertical-crops random gameplay clips from your library.
+- ✍️ **Word-Level Subtitles**: High-speed caption synchronization with professional styling (Grobold font).
+- 📤 **YouTube Auto-Upload**: Direct integration with YouTube Data API v3 for one-click publishing.
+- 🎨 **Modern Cyberpunk UI**: Sleek, glassmorphic dashboard for managing the entire studio.
+
+---
+
+## 🛠️ Architecture
+
+```mermaid
+graph TD
+    A[User Topic] --> B[Gemini AI]
+    B -->|Script| C[Edge-TTS]
+    C -->|Audio| D[Whisper AI]
+    D -->|Word Timings| E[FFmpeg Renderer]
+    F[Gameplay Clips] --> E
+    G[Music Library] --> E
+    E -->|Final MP4| H[YouTube API]
+```
+
+---
+
+## 🚀 Quick Start
+
+### 1. Prerequisites
+- Python 3.8+
+- [FFmpeg](https://ffmpeg.org/download.html) installed and added to PATH.
+
+### 2. Installation
 ```bash
-# 1. Create virtual environment
+# Clone the repository
+git clone https://github.com/Hyper00W/Brainrot-AI.git
+cd Brainrot-AI
+
+# Create and activate virtual environment
 python -m venv venv
-venv\Scripts\activate   # Windows
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-# 2. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
+```
 
-# 3. Configure environment
-copy .env.example .env
-# Edit .env and add your GEMINI_API_KEY
+### 3. Configuration
+1. Create a `.env` file based on `.env.example`:
+   ```env
+   GEMINI_API_KEY=your_api_key_here
+   SECRET_KEY=your_secret_key
+   ```
+2. Place `client_secrets.json` (from Google Cloud Console) in the root directory for YouTube uploads.
+3. Add gameplay clips (`.mp4`) to `assets/gameplay/` and background music (`.mp3`) to `assets/music/`.
 
-# 4. Run the app
+### 4. Run Launch
+```bash
 python app.py
 ```
-
-Open http://localhost:5000
-
----
-
-## Project Structure
-
-```
-Brainrot/
-├── app.py                  # Flask app + API routes
-├── requirements.txt
-├── .env                    # Your API keys (gitignored)
-├── modules/
-│   ├── script_generator.py # Gemini API scripts
-│   ├── voice_generator.py  # EdgeTTS voice synthesis
-│   ├── caption_generator.py# Whisper word-level captions
-│   ├── gameplay.py         # Clip selection + FFmpeg crop
-│   ├── renderer.py         # Final video assembly
-│   └── uploader.py         # YouTube Data API v3
-├── templates/
-│   └── index.html          # Cyberpunk dashboard
-├── static/
-│   ├── css/main.css
-│   └── js/dashboard.js
-├── assets/
-│   ├── gameplay/           # Drop .mp4 clips here
-│   ├── music/              # Drop .mp3 tracks here
-│   └── fonts/              # Optional: Montserrat-Bold.ttf
-└── generated/
-    ├── audio/              # EdgeTTS output
-    ├── captions/           # Whisper JSON
-    └── video/              # Final MP4s
-```
+Visit `http://localhost:5000` to start creating.
 
 ---
 
-## YouTube Upload Setup
+## 📂 Project Structure
 
-1. Go to [Google Cloud Console](https://console.cloud.google.com)
-2. Create project → Enable **YouTube Data API v3**
-3. OAuth 2.0 credentials → Desktop App
-4. Download as `client_secrets.json` → place in project root
-5. First upload will open browser for auth
-
----
-
-## Workflow
-
-1. **Generate Video** tab → enter topic → click Generate Script
-2. Click Generate Voice to synthesize audio
-3. Add gameplay clips to `assets/gameplay/`
-4. Click Render (triggers background pipeline)
-5. Upload Queue → upload to YouTube
+- `app.py`: Flask application and API controller.
+- `modules/`:
+    - `script_generator.py`: GPT/Gemini prompt engineering.
+    - `voice_generator.py`: Edge-TTS audio synthesis.
+    - `caption_generator.py`: Whisper-based word-level transcription.
+    - `gameplay.py`: Clip selection and FFmpeg vertical cropping.
+    - `renderer.py`: Advanced FFmpeg filter-complex assembly.
+    - `uploader.py`: YouTube Data API integration.
+- `templates/`: Cyberpunk dashboard frontend.
 
 ---
 
-## Notes
+## 📜 Documentation
 
-- Whisper `base` model used by default (fast, ~1GB RAM)
-- FFmpeg must be installed and on PATH
-- Background music is mixed at 8% volume automatically
-- Captions use FFmpeg drawtext (no MoviePy dependency for rendering)
+For detailed walkthroughs on specific modules or setup guides, please refer to the [Wiki](https://github.com/Hyper00W/Brainrot-AI/wiki) (coming soon).
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## ⚖️ License
+
+Distributed under the MIT License. See `LICENSE` for more information.
+
+---
+
+<p align="center">
+  Built with ❤️ by the Brainrot Team
+</p>
