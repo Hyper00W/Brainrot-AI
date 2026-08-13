@@ -6,7 +6,7 @@ import json
 GAMEPLAY_DIR = os.getenv('GAMEPLAY_FOLDER', 'assets/gameplay')
 GENERATED_DIR = 'generated/video'
 
-# Local FFmpeg paths
+# Local FFmpeg path
 FFMPEG  = os.path.abspath('ffmpeg.exe') if os.path.exists('ffmpeg.exe') else 'ffmpeg'
 FFPROBE = os.path.abspath('ffprobe.exe') if os.path.exists('ffprobe.exe') else 'ffprobe'
 
